@@ -3,18 +3,19 @@ from random import *
 
 win_width = 1280
 win_height = 720
-#left_bount = win_width / 40
-#right_bound = win_width - 8 * left_bount
-#shift= 0
-#x_start = 20
-#y_start = 10
+left_bount = win_width / 40
+right_bound = win_width - 8 * left_bount
+shift= 0
+x_start = 20
+y_start = 10
 
-
-
-
-
-
-
+platforms = []
+itims = sprite.Group()
+font.init()
+font1 =font.Font(None,40)
+font2 = font.Font(None,80)
+win = font1.render("WIN",True,(255,60,50))
+lose = font1.render("lose",True,(255,0,0))
 
 class GameSprite (sprite.Sprite):
     def __init__(self, player_image, player_x, player_y, size_x , size_y, player_speed): 
@@ -28,38 +29,108 @@ class GameSprite (sprite.Sprite):
         window.blit(self.image, (self.rect.x, self.rect.y))
 
 class Player(GameSprite):
-    def update(self):
+    def update_1(self):
         keys = key.get_pressed()
-        if keys[K_LEFT] and self.rect.x > 5 : 
+        if keys[K_a] and self.rect.x > 5 : 
             self.rect.x -= self.speed
-        if keys [K_RIGHT] and self.rect.x < -80: #650
+        if keys[K_d] and self.rect.x < 80: #650
             self.rect.x += self.speed
-        if keys [K_UP] and self.rect.y > 5: 
+    def update_y(self): 
+        keys = key.get_pressed()
+        if keys[K_w] and self.rect.y > 5: 
             self.rect.y -= self.speed
-        if keys [K_DOWN] and self.rect.y < -80: #450
+        if keys[K_s] and self.rect.y < -80: #450
             self.rect.y += self.speed
     
 
-class Enemy (GameSprite):
+class Enemy(GameSprite): 
+    def __init__(self, player_image, player_x, player_y, size_x, size_y, player_speed, side='left'):
+        GameSprite.__init__(self, player_image, player_x, player_y, size_x, size_y, player_speed)        
+        self.side = side
+    
+    def update(self):
+        global side
+        if self.side == 'right':
+            self.rect.x -= self.speed
+        if self.side == 'left':
+            self.rect.x += self.speed
+
+f=1
+class Mana(GameSprite):
     def __init__(self, player_image, player_x, player_y, size_x , size_y, player_speed,side="left"): 
         self.side = side
 
     def update(self):
-        global side
-        if self.rect.x <= 400: 
-            self.direction = "right"
-        if self.rect.x >= 650: 
-            self.direction = "left"
-
-        if self.direction == "left": 
+        global side,f
+        if self.side == "left": 
             self.rect.x -= self.speed
         else:
             self.rect.x += self.speed
 
-
 window = display.set_mode((win_width,win_height))
 display.set_caption('sas')
-#background = transform.scale(image.load('<<<>>>'),(win_width,win_height))
+background = transform.scale(image.load('bak.png'),(win_width,win_height))
+books=[]
+mon=[]
+stairs=[]
+notings= []
+levl=["----  ---- ",
+"--------------------------------",
+"--------------------------------",
+"--------------------------------",
+"                                ",
+"  -----     -----         ----- ",
+"--------------------------------",
+"--------------------------------",
+"                                ",
+"   ----     -----         ----- ",
+"--------------------------------",
+"--------------------------------",
+"  s k                           ",
+"  s----         s         ----- ",
+"------          s   ------------",
+"-----  b   d  p e    -----------",
+"--------------------------------",
+"                                ",
+'--------------------------------']
+
+x=0
+y=0
+
+for r in levl:
+    for c in r:
+        if c ==" ":
+            noting = GameSprite("not.png",x,y,40,40,0)
+            notings.append(noting)
+            itims.add(notings)
+        if c == "-":
+            platform = GameSprite('plat.png',x,y,40,40,0)
+            platforms.append(platform)
+            itims.add(platforms)
+        if c == "p":
+            player =Player('player.png',x,y,40,40,10)
+            itims.add(player)
+        if c == "s":
+            stair = GameSprite('stair.png',x,y,40,40,0)
+            stairs.append(stair)
+            itims.add(stairs)
+        if c == "d":
+            dore = GameSprite('dore.png',x,y,40,40,0)
+            itims.add(dore)
+        if c == "e":
+            monst = Enemy('snowman.png',x,y,40,40,10,"right")
+            mon.append(monst)
+            itims.add(monst)
+        if c == "k":
+            keyi = GameSprite('key.png',x,y,40,40,0)
+            itims.add(keyi)
+        if c == "b":
+            book = GameSprite('book.png',x,y,40,40,0)
+            books.append(book)
+            itims.add(books)
+        x+=40
+    y+=40
+    x=0
 
 
 
@@ -67,14 +138,9 @@ display.set_caption('sas')
 
 
 
+s_k_s =0
 
-
-
-
-
-
-
-
+boks=0
 
 game = True
 finish=False
@@ -82,7 +148,38 @@ clock = time.Clock()
 FPS = 60
 mixer.init()
 while game:
+    window.blit(background,(0,0))
+    itims.draw(window)
+    if finish != True:
+        player.rect.y += 2
 
+
+        coin_c = font2.render("coins:"+str(s_k_s),True,(255,0,0))
+        window.blit(coin_c,(40,0))
+
+
+        for platform in platforms:
+            if sprite.collide_rect(player,platform):
+                player.update_1()
+                player.rect.y -=2
+            if sprite.collide_rect(player,noting):
+                player.update_1()
+                player.rect.y -=2
+        for stair in stairs:
+            if sprite.collide_rect(player,stair):
+                player.update_y()
+
+        for book in books:
+            if sprite.collide_rect(player,book):
+                boks+=1
+                books.remove(book)
+                itims.remove(book)
+        if sprite.collide_rect(player,keyi):
+            s_k_s+=1
+            itims.remove(keyi)
+
+        for monst in mon:
+            monst.update()
 
     for e in event.get():
         
