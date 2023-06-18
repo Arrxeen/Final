@@ -87,7 +87,7 @@ levl=["                                ",
 "                                ",
 "                                ",
 "  b      l    e   k     r    d",
-"-----s          s-----    s-----",
+"-----s   -------s-----    s-----",
 "     s          s         s     ",
 "l e  sr         s  b      s  b  ",
 "-----------s s------------------",
@@ -249,3 +249,4 @@ while game:
 
     display.update()
     clock.tick(FPS)
+    
